@@ -77,6 +77,7 @@ def update_user(user_id: int, update_user: User) -> User:
             user_db[index] = update_user
             return update_user
     raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+#Ruta para eliminar un usuario
 
 @app.delete(
     "/users/{user_id}",
