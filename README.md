@@ -7,9 +7,9 @@ Este repositorio contiene dos proyectos de ejemplo desarrollados con **FastAPI**
 ## 📂 Estructura del repositorio
 
 .
-├── 01-apis        # API básica con operaciones CRUD
+├── 01-apis        
 │   └── main.py
-├── 02-swagger     # API documentada con Swagger y Pydantic
+├── 02-swagger     
 │   └── main.py
 ├── .gitignore
 └── README.md
