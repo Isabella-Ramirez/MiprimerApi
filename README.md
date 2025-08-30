@@ -1,101 +1,110 @@
-# 🚀 Mi Primeras APIs con FastAPI
+#  Sistema de Reservas de Hotel — FastAPI
 
-Este repositorio contiene dos proyectos de ejemplo desarrollados con **FastAPI** para aprender a crear, documentar y probar APIs REST.
+> Proyecto base listo para clonar, ejecutar y entregar el **Parcial 1 – Aplicaciones y Servicios Web**.
 
 ---
 
-## 📂 Estructura del repositorio
+##  Descripción General
 
+API RESTful básica para gestionar un **sistema de reservas de hotel** con tres recursos principales:
+
+* **Rooms (Habitaciones):** estándar, suite y premium, con tarifa por noche.
+* **Guests (Huéspedes):** datos de contacto.
+* **Reservations (Reservas):** crear (reservar), cancelar y **calcular el costo total** de la estadía.
+
+La API permite **CRUD completo** de los tres recursos, incluye **path parameters**, **query parameters**, **body JSON**, **validaciones**, **códigos HTTP correctos**, autodocumentación con **Swagger (/docs)** y **ReDoc (/redoc)**.
+
+---
+
+##  Estructura del repositorio
+
+```
 .
-├── 01-apis        
-│   └── main.py
-
-├── 02-swagger     
-│   └── main.py
-
-├── .gitignore
-
+├── 01-apis/
+│   └── main.py              # API básica con CRUD
+├── 02-swagger/
+│   └── main.py              # API con documentación Swagger
+├── 03-ReservasHotel/
+│   ├── app/
+│   │   ├── main.py          # Punto de entrada (orquesta los routers)
+│   │   └── models.py        # Modelos (Pydantic y datos en memoria)
+│   └── endpoints/
+│       ├── rooms.py         # Endpoints de habitaciones
+│       ├── guests.py        # Endpoints de huéspedes
+│       └── reservations.py  # Endpoints de reservas
+├── requirements.txt
 └── README.md
+```
+
+> **Nota:** Para simplificar la evaluación del parcial, el almacenamiento es **en memoria** (diccionarios). Puedes migrar fácilmente a una base de datos más adelante (SQLModel/SQLAlchemy) manteniendo las rutas.
 
 ---
 
-## ⚡ Requisitos
+##  Proyectos Incluidos
 
-- Python 3.8+
-- FastAPI
-- Uvicorn
+Este repositorio contiene tres proyectos de ejemplo:
 
-Instala dependencias con:
-
-pip install fastapi uvicorn
+1. **01-apis/**: API básica con operaciones CRUD simples
+2. **02-swagger/**: API con documentación automática usando Swagger
+3. **03-ReservasHotel/**: Sistema completo de reservas de hotel (proyecto principal)
 
 ---
 
-## 📌 01-apis
+##  Requisitos de Instalación
 
-API básica con rutas CRUD (Create, Read, Update, Delete).  
+* **Python** 3.10+
+* Dependencias (archivo `requirements.txt`):
 
-### ▶️ Ejecución
-
-uvicorn main:app --reload
-
-### 📍 Endpoints
-
-- GET / → Devuelve mensaje **Hello World**  
-- GET /saludo/{nombre} → Devuelve un saludo personalizado  
-- POST / → Crea un nuevo item en memoria  
-- PUT /{item_id} → Actualiza un item por ID  
-- DELETE /{item_id} → Elimina un item por ID  
-
-Ejemplo de petición POST:
-
-{
-  "nombre": "Ejemplo",
-  "valor": 123
-}
+```txt
+fastapi
+uvicorn
+pydantic
+python-dateutil
+```
 
 ---
 
-## 📌 02-swagger
+## ▶ Instrucciones de Ejecución
 
-API más avanzada con validaciones usando **Pydantic** y documentación automática con **Swagger**.
+1. Crear y activar un entorno virtual (opcional pero recomendado).
+2. Instalar dependencias:
 
-### ▶️ Ejecución
+```bash
+pip install -r requirements.txt
+```
 
-uvicorn main:app --reload
+3. Ejecutar el servidor:
 
-### 📍 Endpoints
+```bash
+# Para el proyecto de reservas de hotel:
+cd 03-ReservasHotel
+uvicorn app.main:app --reload
 
-- GET /users → Lista todos los usuarios  
-- POST /users → Crea un nuevo usuario  
-- PUT /users/{user_id} → Actualiza un usuario existente  
-- DELETE /users/{user_id} → Elimina un usuario por ID  
+# Para otros ejemplos:
+# cd 01-apis && uvicorn main:app --reload
+# cd 02-swagger && uvicorn main:app --reload
+```
 
-Modelo de usuario:
+4. Probar documentación automática:
 
-{
-  "id": 1,
-  "name": "Miguel Lopez",
-  "email": "miguel.lopez@gmail.com"
-}
-
-### 📖 Documentación automática
-
-Al ejecutar el servidor puedes acceder a:
-
-- Swagger UI → http://127.0.0.1:8000/docs  
-- ReDoc → http://127.0.0.1:8000/redoc  
+* **Swagger UI:** http://127.0.0.1:8000/docs
+* **ReDoc:** http://127.0.0.1:8000/redoc
 
 ---
 
-## 🎯 Objetivo del repositorio
+##  Objetivo del proyecto
 
-- Practicar creación de APIs con FastAPI  
-- Implementar operaciones CRUD  
-- Explorar documentación automática con Swagger  
-- Usar Pydantic para validación de datos  
+- Desarrollar un sistema completo de reservas de hotel
+- Implementar operaciones CRUD para habitaciones, huéspedes y reservas
+- Explorar documentación automática con Swagger
+- Usar Pydantic para validación de datos
+- Calcular costos totales de estadías
 
 ---
 
+##  Autores / Integrantes del Grupo
 
+* Miguel Ángel Lopez Perdomo — miguellopez265477@correo.itm.edu.co
+* Isabella Ramirez Ciro — isabellaramirez1116480@correo.itm.edu.co
 
+---
