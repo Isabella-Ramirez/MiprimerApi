@@ -24,3 +24,4 @@ venv.bak/
 .idea/
 __pycache__/
 /.venv
+.setup-mssql.sh
