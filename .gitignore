@@ -18,9 +18,10 @@ venv.bak/
 
 # dotenv files (may contain secrets)
 .env
-.env.*
+.env.prod
 
 .vscode/
 .idea/
 __pycache__/
 /.venv
+.setup-mssql.sh
