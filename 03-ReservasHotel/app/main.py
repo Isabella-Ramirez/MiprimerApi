@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import engine, Base, test_connection
-# from app.endpoints import guests
+from app.endpoints import guests, rooms, reservations
 from scripts.migrate_database import run_migration
 
 app = FastAPI(
@@ -9,10 +9,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Include routers
-# app.include_router(guests.router)
-# app.include_router(rooms.router)
-# app.include_router(reservations.router)
+
+
+app.include_router(guests.router)
+app.include_router(rooms.router)
+app.include_router(reservations.router)
+
 
 @app.on_event("startup")
 async def startup():
