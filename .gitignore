@@ -1,0 +1,27 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+venv.bak/
+
+# dotenv files (may contain secrets)
+.env
+.env.prod
+
+.vscode/
+.idea/
+__pycache__/
+/.venv
+.setup-mssql.sh
