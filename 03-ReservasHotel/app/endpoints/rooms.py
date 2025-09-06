@@ -72,7 +72,7 @@ def delete_room(room_id: int, db: Session = Depends(get_db)):
     if not room:
         raise HTTPException(status_code=404, detail="Habitación no encontrada")
 
-    reservation = db.query(Reservation).filter(Reservation.room_id == room_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED ).first()
+    reservation = db.query(Reservation).filter(Reservation.room_id == room_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED).first()
     
     if reservation:
         raise HTTPException(status_code=400, detail="No se puede eliminar la habitación con reservas activas")
