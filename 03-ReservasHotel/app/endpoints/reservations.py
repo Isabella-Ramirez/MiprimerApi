@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from datetime import date
 from app.database import get_db
@@ -126,4 +127,6 @@ def delete_reservation(reservation_id: int, db: Session = Depends(get_db)):
 
     db.delete(reservation)
     db.commit()
-    return None
+    return JSONResponse(content={
+        "detail": "Reserva eliminada correctamente"
+    })

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.guest import Guest, GuestCreate, GuestUpdate, GuestResponse
+from app.models.reservation import Reservation, ReservationStatus
 
 router = APIRouter(
     prefix="/guests",
@@ -53,6 +55,7 @@ def update_guest(guest_id: int, guest_update: GuestUpdate, db: Session = Depends
     db.refresh(guest)
     return guest
 
+# Verificar si tiene reservas activas antes de eliminar
 
 # Eliminar un huésped
 @router.delete("/{guest_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -60,7 +63,14 @@ def delete_guest(guest_id: int, db: Session = Depends(get_db)):
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
+    
+    reservation = db.query(Reservation).filter(Reservation.guest_id == guest_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED ).first()
+
+    if reservation:
+        raise HTTPException(status_code=400, detail="No se puede eliminar el huésped con reservas activas")
 
     db.delete(guest)
     db.commit()
-    return None
+    return JSONResponse(content={
+        "detail": "Huésped eliminado correctamente"
+    })
