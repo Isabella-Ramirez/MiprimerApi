@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.room import Room, RoomCreate, RoomUpdate, RoomResponse
+from app.models.reservation import Reservation, ReservationStatus
 
 router = APIRouter(
     prefix="/rooms",
@@ -70,6 +72,13 @@ def delete_room(room_id: int, db: Session = Depends(get_db)):
     if not room:
         raise HTTPException(status_code=404, detail="Habitación no encontrada")
 
+    reservation = db.query(Reservation).filter(Reservation.room_id == room_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED ).first()
+    
+    if reservation:
+        raise HTTPException(status_code=400, detail="No se puede eliminar la habitación con reservas activas")
+
     db.delete(room)
     db.commit()
-    return None
+    return JSONResponse(content={
+        "detail": "Habitación eliminada correctamente"
+    })
