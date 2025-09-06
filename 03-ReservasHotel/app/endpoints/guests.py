@@ -64,7 +64,7 @@ def delete_guest(guest_id: int, db: Session = Depends(get_db)):
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
     
-    reservation = db.query(Reservation).filter(Reservation.guest_id == guest_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED ).first()
+    reservation = db.query(Reservation).filter(Reservation.guest_id == guest_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED).first()
 
     if reservation:
         raise HTTPException(status_code=400, detail="No se puede eliminar el huésped con reservas activas")
