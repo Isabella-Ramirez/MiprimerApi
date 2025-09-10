@@ -1,3 +1,5 @@
+"""Aplicación FastAPI para la gestión de reservas de hotel."""
+
 from fastapi import FastAPI
 from app.database import engine, Base, test_connection
 from app.endpoints import guests, rooms, reservations
@@ -9,8 +11,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
-
 app.include_router(guests.router)
 app.include_router(rooms.router)
 app.include_router(reservations.router)
@@ -18,15 +18,18 @@ app.include_router(reservations.router)
 
 @app.on_event("startup")
 async def startup():
+    """Verifica la conexión a base de datos y ejecuta migraciones al iniciar."""
     try:
         if test_connection():
             print("Conexión a la base de datos verificada en el inicio.")
             run_migration()
     except Exception as e:
         print(f"Error durante el inicio: {e}")
-        
+
+
 @app.get("/")
 async def root():
+    """Endpoint raíz con mensaje de bienvenida y rutas disponibles."""
     return {
         "message": "Bienvenido a la API de Reservas de Hotel. Visita /docs para ver la documentación.",
         "endpoints": ["/guests", "/rooms", "/reservations"]

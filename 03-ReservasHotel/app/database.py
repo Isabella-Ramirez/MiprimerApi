@@ -1,3 +1,5 @@
+"""Configuración y utilidades de base de datos con SQLAlchemy."""
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -13,15 +15,22 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+
 def get_db():
+    """Crea y cierra una sesión de base de datos para cada solicitud."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
+
 def test_connection():
-    """Función simple para probar la conexión a la base de datos."""
+    """Prueba la conexión a la base de datos.
+
+    Returns:
+        bool: True si la conexión es exitosa, False en caso de error.
+    """
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
