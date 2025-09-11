@@ -3,4 +3,6 @@ SQLAlchemy
 python-dotenv
 uvicorn
 pydantic
-pyodbc
+pydantic[email]
+psycopg[binary]
+alembic
