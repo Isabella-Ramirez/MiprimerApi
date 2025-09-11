@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from app.database import engine, Base, test_connection
+from app.database import test_connection
 from app.endpoints import guests, rooms, reservations
-from scripts.migrate_database import run_migration
+from scripts.migrate_database import auto_setup_database
 
 app = FastAPI(
     title="Hotel Reservations API",
@@ -20,8 +20,8 @@ app.include_router(reservations.router)
 async def startup():
     try:
         if test_connection():
-            print("Conexión a la base de datos verificada en el inicio.")
-            run_migration()
+            print("Conexión a la base de datos verificada.")
+            auto_setup_database()
     except Exception as e:
         print(f"Error durante el inicio: {e}")
         

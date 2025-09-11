@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.guest import Guest, GuestCreate, GuestUpdate, GuestResponse
 from app.models.reservation import Reservation, ReservationStatus
+from uuid import UUID
 
 router = APIRouter(
     prefix="/guests",
@@ -34,7 +35,7 @@ def get_all_guests(db: Session = Depends(get_db)):
 
 # Obtener un huésped por ID (Path Parameter)
 @router.get("/{guest_id}", response_model=GuestResponse)
-def get_guest(guest_id: int, db: Session = Depends(get_db)):
+def get_guest(guest_id: UUID, db: Session = Depends(get_db)):
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
