@@ -1,42 +1,110 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Numeric
-from sqlalchemy.sql import func
+from uuid import UUID
+
+from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import func, text
+from enum import Enum as PyEnum
 from app.database import Base
 
-# SQLAlchemy model
+
+class RoomStatus(PyEnum):
+    AVAILABLE = "AVAILABLE"
+    OUT_OF_SERVICE = "OUT_OF_SERVICE"
+    CLEANING = "CLEANING"
+    OCCUPIED = "OCCUPIED"
+
+
+class RoomType(Base):
+    __tablename__ = "room_types"
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(postgresql.UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    code = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    capacity_adults = Column(postgresql.SMALLINT, nullable=False)
+    capacity_children = Column(postgresql.SMALLINT, nullable=False)
+    base_rate = Column(postgresql.NUMERIC(12, 2), nullable=False, server_default=text("0.00"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_by = Column(postgresql.UUID(as_uuid=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_by = Column(postgresql.UUID(as_uuid=True), nullable=True)
+
+
 class Room(Base):
     __tablename__ = "rooms"
-    __table_args__ = {'extend_existing': True}
-    
-    id = Column(Integer, primary_key=True)
-    room_number = Column(String(10), nullable=False, unique=True)
-    room_type = Column(String(50), nullable=False)
-    price_per_night = Column(Numeric(10, 2), nullable=False)
-    is_available = Column(Boolean, default=True)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(postgresql.UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    room_number = Column(String, unique=True, nullable=False)
+    floor = Column(String, nullable=True)
+    room_type_id = Column(postgresql.UUID(as_uuid=True), ForeignKey("room_types.id", ondelete="RESTRICT"), nullable=False)
+    status = Column(
+        postgresql.ENUM(RoomStatus, name="room_status", create_type=False),
+        nullable=False,
+        server_default=RoomStatus.AVAILABLE.value,
+    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_by = Column(postgresql.UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_by = Column(postgresql.UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
 
 # Pydantic models
+class RoomTypeBase(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    capacity_adults: int
+    capacity_children: int
+    base_rate: float
+
+
+class RoomTypeCreate(RoomTypeBase):
+    pass
+
+
+class RoomTypeUpdate(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    capacity_adults: Optional[int] = None
+    capacity_children: Optional[int] = None
+    base_rate: Optional[float] = None
+
+
+class RoomTypeResponse(RoomTypeBase):
+    id: UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
 class RoomBase(BaseModel):
-    room_number: str = Field(..., min_length=1, max_length=10, description="Número de habitación")
-    room_type: str = Field(..., min_length=3, max_length=50, description="Tipo de habitación (individual, doble, suite)")
-    price_per_night: float = Field(..., gt=0, description="Precio por noche")
-    is_available: bool = Field(True, description="Disponibilidad de la habitación")
+    room_number: str
+    floor: Optional[str] = None
+    room_type_id: UUID
+    status: RoomStatus = RoomStatus.AVAILABLE
+
 
 class RoomCreate(RoomBase):
     pass
 
+
 class RoomUpdate(BaseModel):
-    room_number: Optional[str] = Field(None, min_length=1, max_length=10, description="Número de habitación")
-    room_type: Optional[str] = Field(None, min_length=3, max_length=50, description="Tipo de habitación")
-    price_per_night: Optional[float] = Field(None, gt=0, description="Precio por noche")
-    is_available: Optional[bool] = Field(None, description="Disponibilidad de la habitación")
+    room_number: Optional[str] = None
+    floor: Optional[str] = None
+    room_type_id: Optional[int] = None
+    status: Optional[RoomStatus] = None
+
 
 class RoomResponse(RoomBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
 
