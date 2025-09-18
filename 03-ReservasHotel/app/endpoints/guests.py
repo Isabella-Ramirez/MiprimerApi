@@ -1,20 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from uuid import UUID
+
 from app.database import get_db
 from app.models.guest import Guest, GuestCreate, GuestUpdate, GuestResponse
 from app.models.reservation import Reservation, ReservationStatus
-from uuid import UUID
 
-router = APIRouter(
-    prefix="/guests",
-    tags=["Guests"]
-)
+router = APIRouter(prefix="/guests", tags=["Guests"])
 
-# Crear huésped
+
 @router.post("/", response_model=GuestResponse, status_code=status.HTTP_201_CREATED)
-def create_guest(guest: GuestCreate, db: Session = Depends(get_db)):
-    # Validar que no exista el mismo email
+def create_guest(guest: GuestCreate, db: Session = Depends(get_db)) -> GuestResponse:
+    """
+    Crear un nuevo huésped en el sistema.
+
+    Args:
+        guest: Datos del huésped a crear
+        db: Sesión de base de datos
+
+    Returns:
+        GuestResponse: Datos del huésped creado
+
+    Raises:
+        HTTPException: Si el email ya está registrado
+    """
     existing = db.query(Guest).filter(Guest.email == guest.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -26,25 +36,60 @@ def create_guest(guest: GuestCreate, db: Session = Depends(get_db)):
     return new_guest
 
 
-# Listar todos los huéspedes
 @router.get("/", response_model=list[GuestResponse])
-def get_all_guests(db: Session = Depends(get_db)):
+def get_all_guests(db: Session = Depends(get_db)) -> list[GuestResponse]:
+    """
+    Obtener todos los huéspedes registrados.
+
+    Args:
+        db: Sesión de base de datos
+
+    Returns:
+        list[GuestResponse]: Lista de todos los huéspedes
+    """
     guests = db.query(Guest).all()
     return guests
 
 
-# Obtener un huésped por ID (Path Parameter)
 @router.get("/{guest_id}", response_model=GuestResponse)
-def get_guest(guest_id: UUID, db: Session = Depends(get_db)):
+def get_guest(guest_id: UUID, db: Session = Depends(get_db)) -> GuestResponse:
+    """
+    Obtener un huésped específico por su ID.
+
+    Args:
+        guest_id: ID único del huésped
+        db: Sesión de base de datos
+
+    Returns:
+        GuestResponse: Datos del huésped
+
+    Raises:
+        HTTPException: Si el huésped no existe
+    """
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
     return guest
 
 
-# Actualizar un huésped por ID
 @router.put("/{guest_id}", response_model=GuestResponse)
-def update_guest(guest_id: int, guest_update: GuestUpdate, db: Session = Depends(get_db)):
+def update_guest(
+    guest_id: UUID, guest_update: GuestUpdate, db: Session = Depends(get_db)
+) -> GuestResponse:
+    """
+    Actualizar los datos de un huésped existente.
+
+    Args:
+        guest_id: ID único del huésped
+        guest_update: Datos a actualizar
+        db: Sesión de base de datos
+
+    Returns:
+        GuestResponse: Datos actualizados del huésped
+
+    Raises:
+        HTTPException: Si el huésped no existe
+    """
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
@@ -56,22 +101,44 @@ def update_guest(guest_id: int, guest_update: GuestUpdate, db: Session = Depends
     db.refresh(guest)
     return guest
 
-# Verificar si tiene reservas activas antes de eliminar
 
-# Eliminar un huésped
 @router.delete("/{guest_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_guest(guest_id: int, db: Session = Depends(get_db)):
+def delete_guest(guest_id: UUID, db: Session = Depends(get_db)) -> JSONResponse:
+    """
+    Eliminar un huésped del sistema.
+
+    Verifica que el huésped no tenga reservas activas antes de eliminarlo.
+
+    Args:
+        guest_id: ID único del huésped
+        db: Sesión de base de datos
+
+    Returns:
+        JSONResponse: Confirmación de eliminación
+
+    Raises:
+        HTTPException: Si el huésped no existe o tiene reservas activas
+    """
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Huésped no encontrado")
-    
-    reservation = db.query(Reservation).filter(Reservation.guest_id == guest_id, Reservation.status != ReservationStatus.CANCELLED, Reservation.status != ReservationStatus.COMPLETED).first()
+
+    reservation = (
+        db.query(Reservation)
+        .filter(
+            Reservation.guest_id == guest_id,
+            Reservation.status != ReservationStatus.CANCELLED,
+            Reservation.status != ReservationStatus.CHECKED_OUT,
+        )
+        .first()
+    )
 
     if reservation:
-        raise HTTPException(status_code=400, detail="No se puede eliminar el huésped con reservas activas")
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el huésped con reservas activas",
+        )
 
     db.delete(guest)
     db.commit()
-    return JSONResponse(content={
-        "detail": "Huésped eliminado correctamente"
-    })
+    return JSONResponse(content={"detail": "Huésped eliminado correctamente"})
